@@ -1,5 +1,7 @@
 <Solution>
-  <Folder Name="/FrontEnd/" />
+  <Folder Name="/FrontEnd/">
+    <Project Path="Microservice.Web/Microservice.Web.csproj" Id="4d4f8c37-bd76-4e19-9a63-a82dc6cde29f" />
+  </Folder>
   <Folder Name="/Gateway/" />
   <Folder Name="/Integration/" />
   <Folder Name="/Services/">
