@@ -1,10 +1,10 @@
-﻿namespace Microservices.Services.CouponAPI.Models.Dto;
+﻿namespace Microservice.Web.Models;
 
 public class ResultDto<T>
 {
-    public bool Success { get; private set; }
-    public string Message { get; private set; } = string.Empty;
-    public T? Data { get; private set; }
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public T? Data { get; set; }
 
     public static ResultDto<T> SuccessResult(T data, string message = "Operation completed successfully.")
     {

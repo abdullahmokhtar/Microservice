@@ -70,7 +70,9 @@ public class CouponsController(AppDbContext context, IMapper mapper) : Controlle
         if (coupon is null)
             return NotFound(ResultDto<CouponDto>.FailureResult($"Could not find coupon with id {id}"));
         context.Coupons.Remove(coupon);
-        await context.SaveChangesAsync(cancellationToken);
-        return Ok();
+        var rowsaffcted = await context.SaveChangesAsync(cancellationToken);
+        if (rowsaffcted == 0)
+            return StatusCode((int)HttpStatusCode.InternalServerError, ResultDto<CouponDto>.FailureResult($"Could not delete coupon with id {id}"));
+        return Ok(ResultDto<bool>.SuccessResult(true, $"Coupon with id {id} deleted successfully"));
     }
 }
