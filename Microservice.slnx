@@ -5,6 +5,7 @@
   <Folder Name="/Gateway/" />
   <Folder Name="/Integration/" />
   <Folder Name="/Services/">
+    <Project Path="Microservices.service.AuthAPI/Microservices.service.AuthAPI.csproj" Id="d9e0e0aa-8c8e-4ab4-8924-33552ab8d877" />
     <Project Path="Microservices.Services.CouponAPI/Microservices.Services.CouponAPI.csproj" />
   </Folder>
 </Solution>
