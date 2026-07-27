@@ -1,6 +1,6 @@
-using Microservices.Services.CouponAPI;
-using Microservices.Services.CouponAPI.Data;
-using Microservices.Services.CouponAPI.Extensions;
+using Microservices.Services.ProductAPI;
+using Microservices.Services.ProductAPI.Data;
+using Microservices.Services.ProductAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
 builder.Services.AddControllers();
-
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddSwaggerGen();
 
 builder.AddAuthentication();
@@ -23,8 +23,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
@@ -34,6 +33,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 ApplyMigrations(app);
 app.Run();
 

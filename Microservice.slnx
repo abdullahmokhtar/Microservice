@@ -6,6 +6,7 @@
   <Folder Name="/Integration/" />
   <Folder Name="/Services/">
     <Project Path="Microservices.service.AuthAPI/Microservices.service.AuthAPI.csproj" Id="d9e0e0aa-8c8e-4ab4-8924-33552ab8d877" />
+    <Project Path="Microservices.service.ProductAPI/Microservices.Services.ProductAPI.csproj" Id="b6a4ae1c-af8b-4d38-98af-f24c13638cd0" />
     <Project Path="Microservices.Services.CouponAPI/Microservices.Services.CouponAPI.csproj" />
   </Folder>
 </Solution>
