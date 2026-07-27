@@ -4,6 +4,6 @@ namespace Microservices.service.AuthAPI.Services.Iservices
 {
     public interface IJWTTokenGenerator
     {
-        public string GenerateToken(ApplicationUser user);
+        public string GenerateToken(ApplicationUser user, IEnumerable<string> roles);
     }
 }

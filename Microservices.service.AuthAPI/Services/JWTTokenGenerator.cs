@@ -10,20 +10,24 @@ namespace Microservices.service.AuthAPI.Services
 {
     public class JWTTokenGenerator(IOptions<JWTOptions> jWTOptions) : IJWTTokenGenerator
     {
-        public string GenerateToken(ApplicationUser user)
+        public string GenerateToken(ApplicationUser user, IEnumerable<string> roles)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var key = Encoding.ASCII.GetBytes(jWTOptions.Value.SecretKey);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
+            var claims = new ClaimsIdentity(new[]
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                    new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Email, user.Email)
-                }),
+                    new Claim(ClaimTypes.Email, user.Email),
+                });
+            claims.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = claims,
                 Expires = DateTime.UtcNow.AddDays(jWTOptions.Value.ExpiryInDays),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = jWTOptions.Value.Issuer,

@@ -1,5 +1,6 @@
 using Microservices.Services.CouponAPI;
 using Microservices.Services.CouponAPI.Data;
+using Microservices.Services.CouponAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen();
 
+builder.AddAuthentication();
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,6 +29,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

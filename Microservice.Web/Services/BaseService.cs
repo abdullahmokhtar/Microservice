@@ -7,17 +7,17 @@ using Microservice.Web.Utility;
 
 namespace Microservice.Web.Services
 {
-    public class BaseService : IBaseService
+    public class BaseService(ITokenProvider tokenProvider) : IBaseService
     {
-        public async Task<ResultDto<T>> SendAsync<T>(RequestDto requestDto)
+        public async Task<ResultDto<T>> SendAsync<T>(RequestDto requestDto, bool withBearer = true)
         {
             try
             {
                 using var client = new HttpClient();
 
-                if (!string.IsNullOrEmpty(requestDto.AccessToken))
+                if (!string.IsNullOrEmpty(requestDto.AccessToken) || withBearer)
                 {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", requestDto.AccessToken);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", withBearer ? tokenProvider.GetToken() : requestDto.AccessToken);
                 }
 
                 HttpResponseMessage response = requestDto.APIType switch
@@ -33,7 +33,7 @@ namespace Microservice.Web.Services
 
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
                     try
                     {
@@ -50,6 +50,10 @@ namespace Microservice.Web.Services
 
                         return ResultDto<T>.SuccessResult(data, "Request succeeded but response could not be deserialized.");
                     }
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                {
+                    return ResultDto<T>.FailureResult(content);
                 }
 
                 // Non-success status code

@@ -3,11 +3,13 @@ using AutoMapper;
 using Microservices.Services.CouponAPI.Data;
 using Microservices.Services.CouponAPI.Models;
 using Microservices.Services.CouponAPI.Models.Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Microservices.Services.CouponAPI.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CouponsController(AppDbContext context, IMapper mapper) : ControllerBase
@@ -36,6 +38,7 @@ public class CouponsController(AppDbContext context, IMapper mapper) : Controlle
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Post(CouponDto couponDto, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)

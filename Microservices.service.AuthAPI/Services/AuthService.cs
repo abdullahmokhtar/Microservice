@@ -37,7 +37,8 @@ public class AuthService(UserManager<ApplicationUser> userManager, RoleManager<I
         }
 
         var userDto = new UserDto(user.Id, user.Email, user.Name, user.PhoneNumber);
-        var token = jWTTokenGenerator.GenerateToken(user);
+        var roles = await userManager.GetRolesAsync(user);
+        var token = jWTTokenGenerator.GenerateToken(user, roles);
         var response = new LoginResponseDto(token, userDto);
 
         return response;
