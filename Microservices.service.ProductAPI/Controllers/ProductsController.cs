@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Microservices.Services.ProductAPI.Controllers;
 
-[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class ProductsController(AppDbContext context, IMapper mapper) : ControllerBase

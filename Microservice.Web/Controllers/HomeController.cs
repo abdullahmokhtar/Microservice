@@ -1,14 +1,33 @@
 using System.Diagnostics;
 using Microservice.Web.Models;
+using Microservice.Web.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microservice.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(IProductService productService) : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var response = await productService.GetAllProductsAsync();
+            if (!response.Success)
+            {
+                TempData["error"] = response.Message;
+            }
+            return View(response.Data ?? new List<ProductDto>());
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Details(int productId)
+        {
+            var response = await productService.GetProductByIdAsync(productId);
+            if (!response.Success)
+            {
+                TempData["error"] = response.Message;
+                return NotFound();
+            }
+            return View(response.Data);
         }
 
         public IActionResult Privacy()
