@@ -1,6 +1,8 @@
-using Microservices.Services.ProductAPI;
-using Microservices.Services.ProductAPI.Data;
-using Microservices.Services.ProductAPI.Extensions;
+using Microservices.Services.ShoppingCartAPI;
+using Microservices.Services.ShoppingCartAPI.Data;
+using Microservices.Services.ShoppingCartAPI.Extensions;
+using Microservices.Services.ShoppingCartAPI.Service;
+using Microservices.Services.ShoppingCartAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddHttpClient("Product", c =>
+{
+    c.BaseAddress = new Uri(builder.Configuration["ServiceUrls:ProductAPI"]);
+});
+
+builder.Services.AddHttpClient("Coupon", c =>
+{
+    c.BaseAddress = new Uri(builder.Configuration["ServiceUrls:CouponAPI"]);
+});
+builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddSwaggerGen();
