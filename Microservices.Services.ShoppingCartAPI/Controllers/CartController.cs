@@ -1,16 +1,19 @@
 ﻿using AutoMapper;
+using Microservice.MessageBus;
 using Microservices.Services.ShoppingCartAPI.Data;
 using Microservices.Services.ShoppingCartAPI.Models;
 using Microservices.Services.ShoppingCartAPI.Models.Dto;
 using Microservices.Services.ShoppingCartAPI.Service.IService;
+using Microservices.Services.ShoppingCartAPI.Utlity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Microservices.Services.ShoppingCartAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CartController(AppDbContext context, IProductService productService, ICouponService couponService, IMapper mapper) : ControllerBase
+public class CartController(AppDbContext context, IProductService productService, ICouponService couponService, IMessageBus messageBus, IOptions<TopicAndQueueNames> options, IConfiguration configuration, IMapper mapper) : ControllerBase
 {
     [HttpGet("GetCart/{userId}")]
     public async Task<IActionResult> GetCart(string userId)
@@ -68,6 +71,13 @@ public class CartController(AppDbContext context, IProductService productService
         return Ok(ResultDto<string>.SuccessResult("Coupon applied successfully"));
     }
 
+    [HttpPost("EmailCartRequest")]
+    public async Task<IActionResult> EmailCartRequest([FromBody] CartDto cartDto)
+    {
+        await messageBus.PublishMessage(configuration["Azure:ConnectionString"], cartDto, options.Value.EmailShoppingCart);
+        return Ok(ResultDto<bool>.SuccessResult(true));
+    }
+
     [HttpPost("RemoveCoupon")]
     public async Task<IActionResult> RemoveCoupon([FromBody] CartDto cartDto)
     {
@@ -80,7 +90,7 @@ public class CartController(AppDbContext context, IProductService productService
         return Ok(ResultDto<string>.SuccessResult("Coupon removed successfully"));
     }
 
-    [HttpPost("CartUpsert")]
+    [HttpPost("UpsertCart")]
     public async Task<IActionResult> Upsert(CartDto cartDto)
     {
         var cart = await context.CartHeaders.Include(e => e.CartDetails).FirstOrDefaultAsync(c => c.UserId == cartDto.CartHeader.UserId);
@@ -129,7 +139,7 @@ public class CartController(AppDbContext context, IProductService productService
     }
 
     [HttpPost("RemoveCart")]
-    public IActionResult RemoveCart([FromBody] int cartDetailsId)
+    public IActionResult RemoveCart(int cartDetailsId)
     {
         var cartDetail = context.CartDetails.FirstOrDefault(c => c.CartDetailsId == cartDetailsId);
         if (cartDetail is null)

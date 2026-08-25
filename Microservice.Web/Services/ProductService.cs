@@ -4,7 +4,7 @@ using Microservice.Web.Utility;
 
 namespace Microservice.Web.Services
 {
-    public class ProductService(IBaseService baseService) : IProductService
+    public class ProductService(IBaseService baseService, ServicesBaseURI servicesBaseURI) : IProductService
     {
         public async Task<ResultDto<ProductDto>> CreateProductAsync(ProductDto productDto)
         {
@@ -12,7 +12,7 @@ namespace Microservice.Web.Services
             {
                 APIType = ApiType.POST,
                 Data = productDto,
-                URL = SD.ProductAPIBase + "/api/products"
+                URL = servicesBaseURI.ProductAPI + "/api/products"
             });
         }
 
@@ -21,7 +21,7 @@ namespace Microservice.Web.Services
             return await baseService.SendAsync<bool>(new RequestDto
             {
                 APIType = ApiType.DELETE,
-                URL = $"{SD.ProductAPIBase}/api/products/{productId}"
+                URL = $"{servicesBaseURI.ProductAPI}/api/products/{productId}"
             });
         }
 
@@ -30,7 +30,7 @@ namespace Microservice.Web.Services
             return await baseService.SendAsync<IEnumerable<ProductDto>>(new RequestDto
             {
                 APIType = ApiType.GET,
-                URL = SD.ProductAPIBase + "/api/products"
+                URL = servicesBaseURI.ProductAPI + "/api/products"
             });
         }
 
@@ -39,7 +39,7 @@ namespace Microservice.Web.Services
             return await baseService.SendAsync<ProductDto>(new RequestDto
             {
                 APIType = ApiType.GET,
-                URL = $"{SD.ProductAPIBase}/api/products/{productId}"
+                URL = $"{servicesBaseURI.ProductAPI}/api/products/{productId}"
             });
         }
 
@@ -49,7 +49,7 @@ namespace Microservice.Web.Services
             {
                 APIType = ApiType.PUT,
                 Data = productDto,
-                URL = SD.ProductAPIBase + "/api/products"
+                URL = servicesBaseURI.ProductAPI + "/api/products"
             });
         }
     }

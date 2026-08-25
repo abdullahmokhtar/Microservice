@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Microservices.Services.CouponAPI.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CouponsController(AppDbContext context, IMapper mapper) : ControllerBase

@@ -3,7 +3,9 @@
     <Project Path="Microservice.Web/Microservice.Web.csproj" Id="4d4f8c37-bd76-4e19-9a63-a82dc6cde29f" />
   </Folder>
   <Folder Name="/Gateway/" />
-  <Folder Name="/Integration/" />
+  <Folder Name="/Integration/">
+    <Project Path="Microservice.MessageBus/Microservice.MessageBus.csproj" Id="c85a3eb3-2726-4a2d-8cd3-deabe1e4151e" />
+  </Folder>
   <Folder Name="/Services/">
     <Project Path="Microservices.service.AuthAPI/Microservices.service.AuthAPI.csproj" Id="d9e0e0aa-8c8e-4ab4-8924-33552ab8d877" />
     <Project Path="Microservices.service.ProductAPI/Microservices.Services.ProductAPI.csproj" Id="b6a4ae1c-af8b-4d38-98af-f24c13638cd0" />

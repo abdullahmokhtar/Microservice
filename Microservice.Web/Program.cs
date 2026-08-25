@@ -2,21 +2,20 @@ using Microservice.Web.Services;
 using Microservice.Web.Services.IServices;
 using Microservice.Web.Utility;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
-
-SD.ProductAPIBase = builder.Configuration["ServiceUrls:ProductAPI"];
-SD.CouponAPIBase = builder.Configuration["ServiceUrls:CouponAPI"];
-SD.AuthAPIBase = builder.Configuration["ServiceUrls:AuthAPI"];
+builder.Services.Configure<ServicesBaseURI>(builder.Configuration.GetSection("ServiceUrls"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ServicesBaseURI>>().Value);
 
 builder.Services.AddScoped<IBaseService, BaseService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -29,11 +28,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

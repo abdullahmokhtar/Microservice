@@ -4,7 +4,7 @@ using Microservice.Web.Utility;
 
 namespace Microservice.Web.Services;
 
-public class AuthService(IBaseService baseService) : IAuthService
+public class AuthService(IBaseService baseService, ServicesBaseURI servicesBaseURI) : IAuthService
 {
     public async Task<ResultDto<RegisterDto>> AssignRoleAsync(RegisterDto registerDto)
     {
@@ -12,7 +12,7 @@ public class AuthService(IBaseService baseService) : IAuthService
         {
             APIType = ApiType.POST,
             Data = registerDto,
-            URL = SD.AuthAPIBase + "/api/auth/assign-role"
+            URL = servicesBaseURI.AuthAPI + "/api/auth/assign-role"
         });
     }
 
@@ -22,7 +22,7 @@ public class AuthService(IBaseService baseService) : IAuthService
         {
             APIType = ApiType.POST,
             Data = loginDto,
-            URL = SD.AuthAPIBase + "/api/auth/login"
+            URL = servicesBaseURI.AuthAPI + "/api/auth/login"
         });
     }
 
@@ -32,7 +32,7 @@ public class AuthService(IBaseService baseService) : IAuthService
         {
             APIType = ApiType.POST,
             Data = registerDto,
-            URL = SD.AuthAPIBase + "/api/auth/register"
+            URL = servicesBaseURI.AuthAPI + "/api/auth/register"
         });
     }
 }

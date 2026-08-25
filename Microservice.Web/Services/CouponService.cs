@@ -4,7 +4,7 @@ using Microservice.Web.Utility;
 
 namespace Microservice.Web.Services;
 
-public class CouponService(IBaseService baseService) : ICouponService
+public class CouponService(IBaseService baseService, ServicesBaseURI servicesBaseURI) : ICouponService
 {
     public async Task<ResultDto<CouponDto>> CreateCouponAsync(CouponDto couponDto)
     {
@@ -12,7 +12,7 @@ public class CouponService(IBaseService baseService) : ICouponService
         {
             APIType = ApiType.POST,
             Data = couponDto,
-            URL = SD.CouponAPIBase + "/api/coupons"
+            URL = servicesBaseURI.CouponAPI + "/api/coupons"
         });
     }
 
@@ -21,7 +21,7 @@ public class CouponService(IBaseService baseService) : ICouponService
         return await baseService.SendAsync<bool>(new RequestDto
         {
             APIType = ApiType.DELETE,
-            URL = $"{SD.CouponAPIBase}/api/coupons/{couponId}"
+            URL = $"{servicesBaseURI.CouponAPI}/api/coupons/{couponId}"
         });
     }
 
@@ -30,7 +30,7 @@ public class CouponService(IBaseService baseService) : ICouponService
         return await baseService.SendAsync<IEnumerable<CouponDto>>(new RequestDto
         {
             APIType = ApiType.GET,
-            URL = SD.CouponAPIBase + "/api/coupons"
+            URL = servicesBaseURI.CouponAPI + "/api/coupons"
         });
     }
 
@@ -39,7 +39,7 @@ public class CouponService(IBaseService baseService) : ICouponService
         return await baseService.SendAsync<CouponDto>(new RequestDto
         {
             APIType = ApiType.GET,
-            URL = $"{SD.CouponAPIBase}/api/coupons/GetByCode/{couponCode}"
+            URL = $"{servicesBaseURI.CouponAPI}/api/coupons/GetByCode/{couponCode}"
         });
     }
 
@@ -48,7 +48,7 @@ public class CouponService(IBaseService baseService) : ICouponService
         return await baseService.SendAsync<CouponDto>(new RequestDto
         {
             APIType = ApiType.GET,
-            URL = $"{SD.CouponAPIBase}/api/coupons/{couponId}"
+            URL = $"{servicesBaseURI.CouponAPI}/api/coupons/{couponId}"
         });
     }
 
@@ -58,7 +58,7 @@ public class CouponService(IBaseService baseService) : ICouponService
         {
             APIType = ApiType.PUT,
             Data = couponDto,
-            URL = SD.CouponAPIBase + "/api/coupons"
+            URL = servicesBaseURI.CouponAPI + "/api/coupons"
         });
     }
 }
