@@ -1,6 +1,8 @@
+using Microservice.MessageBus;
 using Microservices.service.AuthAPI.Models;
 using Microservices.service.AuthAPI.Services;
 using Microservices.service.AuthAPI.Services.Iservices;
+using Microservices.service.AuthAPI.Utlity;
 using Microservices.Services.AuthAPI.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,10 @@ builder.Services.Configure<JWTOptions>(builder.Configuration.GetSection("ApiSett
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IMessageBus, MessageBus>();
+builder.Services.Configure<TopicAndQueueNames>(builder.Configuration.GetSection("TopicAndQueueNames"));
+builder.Services.Configure<AzureConfig>(builder.Configuration.GetSection("Azure"));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

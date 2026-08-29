@@ -50,7 +50,7 @@ public class CartController(ICartService cartService) : Controller
     public async Task<IActionResult> EmailCart(CartDto cartDto)
     {
         var cart = await GetCart();
-        cart?.CartHeader.Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        cart?.CartHeader.Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
         var result = await cartService.EmailCartAsync(cart);
         if (result.Success)
         {

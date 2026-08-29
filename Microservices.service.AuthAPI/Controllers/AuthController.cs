@@ -1,13 +1,17 @@
-﻿using Microservices.AuthAPI.Models;
+﻿using Microservice.MessageBus;
+using Microservices.AuthAPI.Models;
 using Microservices.service.AuthAPI.Models.Dto;
 using Microservices.service.AuthAPI.Services.Iservices;
+using Microservices.service.AuthAPI.Utlity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Microservices.service.AuthAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController(IAuthService authService) : ControllerBase
+
+public class AuthController(IAuthService authService, IMessageBus messageBus, IOptions<TopicAndQueueNames> topicAndQueueNames, IOptions<AzureConfig> azureConfig) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
@@ -18,6 +22,7 @@ public class AuthController(IAuthService authService) : ControllerBase
             ResultDto<string> result = ResultDto<string>.FailureResult(errorMessage);
             return BadRequest(result);
         }
+        await messageBus.PublishMessage(azureConfig.Value.ConnectionString, registerDto.Email, topicAndQueueNames.Value.UserRegistration);
         return Ok(ResultDto<string>.SuccessResult(""));
     }
 
