@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Microservice.Web.Controllers;
 
-public class CartController(ICartService cartService) : Controller
+[Authorize]
+public class CartController(ICartService cartService, IOrderService orderService) : Controller
 {
-    [Authorize]
     public async Task<IActionResult> Index()
     {
         return View(await GetCart());
@@ -19,6 +19,27 @@ public class CartController(ICartService cartService) : Controller
         var userId = User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
         var result = await cartService.GetCartByUserIdAsync(userId);
         return result?.Data;
+    }
+
+    public async Task<IActionResult> Checkout()
+    {
+        return View(await GetCart());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Checkout(CartDto cartDto, CancellationToken cancellationToken = default)
+    {
+        var cart = await GetCart();
+        cart.CartHeader.Phone = cartDto.CartHeader.Phone;
+        cart.CartHeader.Email = cartDto.CartHeader.Email;
+        cart.CartHeader.Name = cartDto.CartHeader.Name;
+        var result = await orderService.CreateOrderAsync(cart, cancellationToken);
+        if (result is not null && result.Success)
+        {
+            //return RedirectToAction("Confirmation", "Order", new { orderId = result.Data.OrderHeaderId });
+        }
+
+        return View();
     }
 
     public async Task<IActionResult> RemoveItem(int id)

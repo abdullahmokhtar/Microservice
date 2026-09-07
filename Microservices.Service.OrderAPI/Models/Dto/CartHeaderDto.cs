@@ -1,4 +1,6 @@
-﻿namespace Microservices.Service.EmailAPI.Models.DTO;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Microservices.Service.OrderAPI.Models.Dto;
 
 public class CartHeaderDto
 {
@@ -11,5 +13,6 @@ public class CartHeaderDto
 
     public string Name { get; set; }
     public string Phone { get; set; }
+    [EmailAddress]
     public string Email { get; set; }
 }

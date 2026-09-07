@@ -6,4 +6,5 @@ public class ServicesBaseURI
     public string CouponAPI { get; set; } = null!;
     public string AuthAPI { get; set; } = null!;
     public string ShoppingCartApi { get; set; } = null!;
+    public string OrderApi { get; set; } = null!;
 }
