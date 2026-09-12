@@ -51,7 +51,7 @@ namespace Microservice.Web.Controllers
             if (!response.Success)
             {
                 TempData["error"] = response.Message;
-                return View(productDto);
+                return RedirectToAction(nameof(Details), new { productId = productDto.ProductId });
             }
             TempData["success"] = response.Message;
 

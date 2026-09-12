@@ -36,10 +36,28 @@ public class CartController(ICartService cartService, IOrderService orderService
         var result = await orderService.CreateOrderAsync(cart, cancellationToken);
         if (result is not null && result.Success)
         {
-            //return RedirectToAction("Confirmation", "Order", new { orderId = result.Data.OrderHeaderId });
+            var domain = Request.Scheme + "://" + Request.Host.Value;
+            var stripeRequest = new StripeRequestDto
+            {
+                ApprovedURL = domain + "/Cart/Confirmation/Cart?orderId=" + result.Data.OrderHeaderId,
+                CancelURL = domain + Url.Action(nameof(Checkout), "Cart"),
+                OrderHeader = result.Data
+            };
+            var stripeResult = await orderService.CreateStripeSessionAsync(stripeRequest, cancellationToken);
+            return Redirect(stripeResult.Data.SessionURL);
         }
 
         return View();
+    }
+
+    public async Task<IActionResult> Confirmation(int orderId, CancellationToken cancellationToken = default)
+    {
+        var result = await orderService.ValidateStipeSessionAsync(orderId, cancellationToken);
+        if (result.Success && result.Data.Status == OrderStatus.Approved)
+        {
+            return View(orderId);
+        }
+        return View(orderId);
     }
 
     public async Task<IActionResult> RemoveItem(int id)

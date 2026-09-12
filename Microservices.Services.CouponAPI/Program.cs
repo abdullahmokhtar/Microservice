@@ -1,6 +1,7 @@
 using Microservices.Services.CouponAPI;
 using Microservices.Services.CouponAPI.Data;
 using Microservices.Services.CouponAPI.Extensions;
+using Microservices.Services.CouponAPI.Utlity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
+builder.Services.Configure<StripeApiKey>(builder.Configuration.GetSection("StripeApiKey"));
+
 builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen();

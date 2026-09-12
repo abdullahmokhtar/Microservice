@@ -15,4 +15,24 @@ public class OrderService(IBaseService baseService, ServicesBaseURI servicesBase
             URL = servicesBaseURI.OrderApi + "/api/orders"
         });
     }
+
+    public async Task<ResultDto<StripeRequestDto>> CreateStripeSessionAsync(StripeRequestDto stripeRequest, CancellationToken cancellationToken = default)
+    {
+        return await baseService.SendAsync<StripeRequestDto>(new RequestDto
+        {
+            APIType = ApiType.POST,
+            Data = stripeRequest,
+            URL = servicesBaseURI.OrderApi + "/api/orders/CreateStripeSession"
+        });
+    }
+
+    public async Task<ResultDto<OrderHeaderDto>> ValidateStipeSessionAsync(int orderHeaderId, CancellationToken cancellationToken = default)
+    {
+        return await baseService.SendAsync<OrderHeaderDto>(new RequestDto
+        {
+            APIType = ApiType.POST,
+            Data = orderHeaderId,
+            URL = servicesBaseURI.OrderApi + "/api/orders/ValidateStripeSession"
+        });
+    }
 }

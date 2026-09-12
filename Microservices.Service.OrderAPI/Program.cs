@@ -2,6 +2,7 @@ using Microservice.MessageBus;
 using Microservices.Service.OrderAPI;
 using Microservices.Service.OrderAPI.Data;
 using Microservices.Service.OrderAPI.Extensions;
+using Microservices.Service.OrderAPI.Utlity;
 using Microservices.Services.OrderAPI.Service;
 using Microservices.Services.OrderAPI.Service.IService;
 using Microservices.Services.OrderAPI.Utlity;
@@ -22,6 +23,8 @@ builder.Services.AddHttpClient("Product", c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["ServiceUrls:ProductAPI"]);
 }).AddHttpMessageHandler<BackendAPIAuthHttpClientHandler>();
+
+builder.Services.Configure<StripeApiKey>(builder.Configuration.GetSection("StripeApiKey"));
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
