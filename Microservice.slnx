@@ -11,6 +11,7 @@
     <Project Path="Microservices.Service.EmailAPI/Microservices.Service.EmailAPI.csproj" Id="b21b1897-b6e4-4267-bb76-932b7a4862bc" />
     <Project Path="Microservices.Service.OrderAPI/Microservices.Service.OrderAPI.csproj" Id="a0c1af19-ff94-4b64-8927-708d4473648d" />
     <Project Path="Microservices.service.ProductAPI/Microservices.Services.ProductAPI.csproj" Id="b6a4ae1c-af8b-4d38-98af-f24c13638cd0" />
+    <Project Path="Microservices.Service.RewardAPI/Microservices.Service.RewardAPI.csproj" Id="43be1b18-dc53-410b-b9e7-ca3fbb7eae65" />
     <Project Path="Microservices.Services.CouponAPI/Microservices.Services.CouponAPI.csproj" />
     <Project Path="Microservices.Services.ShoppingCartAPI/Microservices.Services.ShoppingCartAPI.csproj" Id="eef9e816-0d61-4b3e-ad38-db395e0000a9" />
   </Folder>

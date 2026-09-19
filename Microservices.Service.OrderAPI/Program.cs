@@ -18,6 +18,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<BackendAPIAuthHttpClientHandler>();
 builder.Services.AddScoped<IMessageBus, MessageBus>();
 builder.Services.Configure<TopicAndQueueNames>(builder.Configuration.GetSection("TopicAndQueueNames"));
+builder.Services.Configure<AzureConfig>(builder.Configuration.GetSection("Azure"));
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddHttpClient("Product", c =>
 {

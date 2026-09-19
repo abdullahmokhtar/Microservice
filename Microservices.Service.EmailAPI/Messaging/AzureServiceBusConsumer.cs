@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Azure.Messaging.ServiceBus;
+using Microservices.Service.EmailAPI.Message;
 using Microservices.Service.EmailAPI.Models;
 using Microservices.Service.EmailAPI.Models.DTO;
 using Microservices.Service.EmailAPI.Utlity;
@@ -13,6 +14,7 @@ public class AzureServiceBusConsumer : IAzureServiceBusConsumer
 {
     private readonly ServiceBusProcessor _emailCartProcessor;
     private readonly ServiceBusProcessor _userRegistrationProcessor;
+    private readonly ServiceBusProcessor _OrderPlacedProcessor;
     private readonly IServiceProvider _serviceProvider;
 
     public AzureServiceBusConsumer(IOptions<AzureConfig> azureConfig, IOptions<TopicAndQueueNames> topicAndQueueNames, IServiceProvider serviceProvider)
@@ -20,6 +22,7 @@ public class AzureServiceBusConsumer : IAzureServiceBusConsumer
         var client = new ServiceBusClient(azureConfig.Value.ConnectionString);
         _emailCartProcessor = client.CreateProcessor(topicAndQueueNames.Value.EmailShoppingCart);
         _userRegistrationProcessor = client.CreateProcessor(topicAndQueueNames.Value.UserRegistration);
+        _OrderPlacedProcessor = client.CreateProcessor(topicAndQueueNames.Value.OrderCreatedTopic, topicAndQueueNames.Value.OrderCreatedEmailSubscription);
         _serviceProvider = serviceProvider;
     }
 
@@ -31,6 +34,30 @@ public class AzureServiceBusConsumer : IAzureServiceBusConsumer
         _userRegistrationProcessor.ProcessMessageAsync += OnUserRegistrationRequestReceived;
         _userRegistrationProcessor.ProcessErrorAsync += ErrorHandler;
         await _userRegistrationProcessor.StartProcessingAsync();
+        _OrderPlacedProcessor.ProcessMessageAsync += OnOrderPlacedRequestReceived;
+        _OrderPlacedProcessor.ProcessErrorAsync += ErrorHandler;
+        await _OrderPlacedProcessor.StartProcessingAsync();
+    }
+
+    private async Task OnOrderPlacedRequestReceived(ProcessMessageEventArgs args)
+    {
+        var body = Encoding.UTF8.GetString(args.Message.Body);
+        var rewardMessage = JsonSerializer.Deserialize<RewardMessage>(body);
+
+        using var scope = _serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var emailLog = new EmailLogger
+        {
+            Email = rewardMessage.UserId,
+            Message = "Thank you for Ordering with us.",
+            SentAt = DateTime.UtcNow
+        };
+
+
+        context.EmailLoggers.Add(emailLog);
+        await context.SaveChangesAsync();
+        await args.CompleteMessageAsync(args.Message);
     }
 
     private async Task OnUserRegistrationRequestReceived(ProcessMessageEventArgs args)

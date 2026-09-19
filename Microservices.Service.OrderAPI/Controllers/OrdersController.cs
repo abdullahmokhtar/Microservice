@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Microservice.MessageBus;
 using Microservices.Service.OrderAPI.Data;
 using Microservices.Service.OrderAPI.Models;
 using Microservices.Service.OrderAPI.Models.Dto;
 using Microservices.Service.OrderAPI.Utlity;
+using Microservices.Services.OrderAPI.Utlity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +17,7 @@ namespace Microservices.Service.OrderAPI.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class OrdersController(IMapper mapper, AppDbContext context, IOptions<StripeApiKey> stripeApiKey) : ControllerBase
+public class OrdersController(IMapper mapper, AppDbContext context, IOptions<StripeApiKey> stripeApiKey, IMessageBus messageBus, IOptions<TopicAndQueueNames> topicAndQueueNames, IOptions<AzureConfig> azureConfig) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> CreateOrder(CartDto cart, CancellationToken cancellationToken = default)
@@ -85,8 +87,20 @@ public class OrdersController(IMapper mapper, AppDbContext context, IOptions<Str
             orderheader.PaymentIntntId = paymentIntent.Id;
             orderheader.Status = OrderStatus.Approved;
             await context.SaveChangesAsync(cancellationToken);
+            await CreateRewardForOrder(orderheader);
             return Ok(ResultDto<OrderHeaderDto>.SuccessResult(mapper.Map<OrderHeaderDto>(orderheader)));
         }
         return BadRequest(ResultDto<StripeRequestDto>.FailureResult("Payment not completed"));
+    }
+
+    private async Task CreateRewardForOrder(OrderHeader orderHeader)
+    {
+        var rewardDto = new RewardDto
+        {
+            UserId = orderHeader.UserId,
+            RewardActivity = Convert.ToInt16(orderHeader.OrderTotal),
+            OrderId = orderHeader.OrderHeaderId
+        };
+        await messageBus.PublishMessage(azureConfig.Value.ConnectionString, rewardDto, topicAndQueueNames.Value.OrderCreatedTopic);
     }
 }

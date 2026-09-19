@@ -2,5 +2,6 @@
 {
     public class TopicAndQueueNames
     {
+        public string OrderCreatedTopic { get; set; } = null!;
     }
 }
