@@ -1,0 +1,86 @@
+﻿@{
+    var status = Context.Request.Query["status"];
+
+    var all = string.Empty;
+    var pending = string.Empty;
+    var approved = string.Empty;
+    var readyForPickup = string.Empty;
+    var completed = string.Empty;
+    var refunded = string.Empty;
+    var cancelled = string.Empty;
+
+    switch (status)
+    {
+        case null:
+            all = "acrive text-white bg-secondary";
+            break;
+        case "0":
+            pending = "acrive text-white bg-secondary";
+            break;
+        case "1":
+            approved = "acrive text-white bg-secondary";
+            break;
+        case "2":
+            readyForPickup = "acrive text-white bg-secondary";
+            break;
+        case "3":
+            completed = "acrive text-white bg-secondary";
+            break;
+        case "4":
+            refunded = "acrive text-white bg-secondary";
+            break;
+        default:
+            cancelled = "acrive text-white bg-secondary";
+            break;
+
+    }
+}
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-secondary bg-gradient m-lg-0 py-3 d-flex justify-content-between">
+        <div class="row">
+            <h1 class="text-white">Previous Orders</h1>
+        </div>
+        <ul class="list-group list-group-horizontal-sm pt-2">
+            <li class="list-group-item @all">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index">ALL</a>
+            </li>
+            <li class="list-group-item @pending">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index" asp-route-status="0">Pending</a>
+            </li>
+            <li class="list-group-item @approved">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index" asp-route-status="1">Approved</a>
+            </li>
+            <li class="list-group-item @readyForPickup">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index" asp-route-status="2">ReadyForPickup</a>
+            </li>
+            <li class="list-group-item @completed">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index" asp-route-status="3">Completed</a>
+            </li>
+            <li class="list-group-item @refunded">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index" asp-route-status="4">Refunded</a>
+            </li>
+            <li class="list-group-item @cancelled">
+                <a style="text-decoration:none;" asp-controller="Order" asp-action="Index" asp-route-status="5">Cancelled</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body p-4">
+        <table id="tblData" class="table table-bordered table-striped pt-3 w-100">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/order.js"></script>
+}

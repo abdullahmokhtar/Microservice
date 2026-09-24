@@ -19,6 +19,39 @@ namespace Microservices.Service.OrderAPI.Controllers;
 [Authorize]
 public class OrdersController(IMapper mapper, AppDbContext context, IOptions<StripeApiKey> stripeApiKey, IMessageBus messageBus, IOptions<TopicAndQueueNames> topicAndQueueNames, IOptions<AzureConfig> azureConfig) : ControllerBase
 {
+    [HttpGet]
+    public async Task<IActionResult> GetOrders(string userId, OrderStatus? status, CancellationToken cancellationToken = default)
+    {
+        var orderHeadersQuery = context.OrderHeaders.AsNoTracking();
+
+        if (!User.IsInRole(SD.RoleAdmin))
+        {
+            orderHeadersQuery = orderHeadersQuery.Where(o => o.UserId == userId);
+        }
+        if (status is not null)
+        {
+            orderHeadersQuery = orderHeadersQuery.Where(o => o.Status == status);
+        }
+        var orderHeaders = await orderHeadersQuery.Include(o => o.OrderDetails)
+          .OrderByDescending(o => o.OrderHeaderId)
+            .ToListAsync(cancellationToken);
+        var orderHeaderDtos = mapper.Map<IEnumerable<OrderHeaderDto>>(orderHeaders);
+        return Ok(ResultDto<IEnumerable<OrderHeaderDto>>.SuccessResult(orderHeaderDtos));
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetOrder(int id, CancellationToken cancellationToken = default)
+    {
+        var orderHeader = await context.OrderHeaders
+            .Include(o => o.OrderDetails)
+            .FirstOrDefaultAsync(o => o.OrderHeaderId == id, cancellationToken);
+        if (orderHeader is null)
+        {
+            return NotFound(ResultDto<OrderHeaderDto>.FailureResult("Order not found"));
+        }
+        var orderHeaderDto = mapper.Map<OrderHeaderDto>(orderHeader);
+        return Ok(ResultDto<OrderHeaderDto>.SuccessResult(orderHeaderDto));
+    }
     [HttpPost]
     public async Task<IActionResult> CreateOrder(CartDto cart, CancellationToken cancellationToken = default)
     {
@@ -48,7 +81,7 @@ public class OrdersController(IMapper mapper, AppDbContext context, IOptions<Str
                     ProductData = new SessionLineItemPriceDataProductDataOptions
                     {
                         Name = item.Product.Name,
-                        Images = new List<string> { item.Product.ImageUrl },
+                        Images = [item.Product.ImageUrl],
                     },
                 },
                 Quantity = item.Count,
@@ -102,5 +135,33 @@ public class OrdersController(IMapper mapper, AppDbContext context, IOptions<Str
             OrderId = orderHeader.OrderHeaderId
         };
         await messageBus.PublishMessage(azureConfig.Value.ConnectionString, rewardDto, topicAndQueueNames.Value.OrderCreatedTopic);
+    }
+
+    [HttpPost("UpdateStatus/{id:int}")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] OrderStatus status, CancellationToken cancellationToken = default)
+    {
+        var orderHeader = await context.OrderHeaders.FirstOrDefaultAsync(o => o.OrderHeaderId == id, cancellationToken);
+        if (orderHeader is null)
+        {
+            return NotFound(ResultDto<OrderHeaderDto>.FailureResult("Order not found"));
+        }
+        if (status == OrderStatus.Cancelled)
+        {
+            var options = new RefundCreateOptions
+            {
+                PaymentIntent = orderHeader.PaymentIntntId,
+                Reason = RefundReasons.RequestedByCustomer
+            };
+            var client = new StripeClient(stripeApiKey.Value.ApiKey);
+            var refundService = client.V1.Refunds;
+            var refund = refundService.Create(options);
+            orderHeader.Status = OrderStatus.Refunded;
+        }
+        else
+        {
+            orderHeader.Status = status;
+        }
+        await context.SaveChangesAsync(cancellationToken);
+        return Ok(ResultDto<OrderHeaderDto>.SuccessResult(mapper.Map<OrderHeaderDto>(orderHeader)));
     }
 }

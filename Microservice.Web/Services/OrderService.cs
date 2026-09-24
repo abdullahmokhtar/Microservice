@@ -26,6 +26,34 @@ public class OrderService(IBaseService baseService, ServicesBaseURI servicesBase
         });
     }
 
+    public async Task<ResultDto<OrderHeaderDto>> Get(int id, CancellationToken cancellationToken = default)
+    {
+        return await baseService.SendAsync<OrderHeaderDto>(new RequestDto
+        {
+            APIType = ApiType.GET,
+            URL = servicesBaseURI.OrderApi + "/api/orders/" + id
+        });
+    }
+
+    public async Task<ResultDto<IEnumerable<OrderHeaderDto>>> GetAll(string userId, OrderStatus? status, CancellationToken cancellationToken = default)
+    {
+        return await baseService.SendAsync<IEnumerable<OrderHeaderDto>>(new RequestDto
+        {
+            APIType = ApiType.GET,
+            URL = $"{servicesBaseURI.OrderApi}/api/orders?userId={userId}&status={status}"
+        });
+    }
+
+    public Task<ResultDto<OrderHeaderDto>> UpdateStatus(int orderHeaderId, OrderStatus status, CancellationToken cancellationToken = default)
+    {
+        return baseService.SendAsync<OrderHeaderDto>(new RequestDto
+        {
+            APIType = ApiType.POST,
+            Data = status,
+            URL = servicesBaseURI.OrderApi + "/api/orders/UpdateStatus/" + orderHeaderId
+        });
+    }
+
     public async Task<ResultDto<OrderHeaderDto>> ValidateStipeSessionAsync(int orderHeaderId, CancellationToken cancellationToken = default)
     {
         return await baseService.SendAsync<OrderHeaderDto>(new RequestDto

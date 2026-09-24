@@ -19,5 +19,5 @@ public class OrderHeader
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public string? PaymentIntntId { get; set; }
     public string? StripeSessionId { get; set; }
-    public IEnumerable<OrderDetail> OrderDetails { get; set; } = [];
+    public IEnumerable<OrderDetail> OrderDetails { get; set; }
 }

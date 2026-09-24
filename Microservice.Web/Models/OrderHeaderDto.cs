@@ -16,6 +16,7 @@ public class OrderHeaderDto
     public string Email { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.Now;
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
+    public string StatusString => Status.ToString();
     public string? PaymentIntntId { get; set; }
     public string? StripeSessionId { get; set; }
     public IEnumerable<OrderDetailDto> OrderDetails { get; set; } = [];
