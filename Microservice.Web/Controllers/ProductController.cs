@@ -74,6 +74,8 @@ namespace Microservice.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProduct(ProductDto model)
         {
+            if (!ModelState.IsValid)
+                return View(model);
             var response = await productService.UpdateProductAsync(model);
             if (!response.Success)
             {

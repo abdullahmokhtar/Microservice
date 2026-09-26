@@ -15,25 +15,78 @@ namespace Microservice.Web.Services
             {
                 using var client = new HttpClient();
 
-                if (!string.IsNullOrEmpty(requestDto.AccessToken) || withBearer)
+                if (withBearer)
                 {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", withBearer ? tokenProvider.GetToken() : requestDto.AccessToken);
+                    var token = tokenProvider.GetToken();
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    }
+                }
+                else if (!string.IsNullOrEmpty(requestDto.AccessToken))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", requestDto.AccessToken);
+                }
+                if (requestDto.ContentType == ContentType.MultipartFormData)
+                {
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("multipart/form-data"));
+                }
+                else
+                {
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 }
 
-                HttpResponseMessage response = requestDto.APIType switch
+                HttpResponseMessage response = null;
+
+                if (requestDto.ContentType == ContentType.MultipartFormData)
                 {
-                    ApiType.GET => await client.GetAsync(requestDto.URL),
-                    ApiType.POST => await client.PostAsync(requestDto.URL, new StringContent(JsonSerializer.Serialize(requestDto.Data), Encoding.UTF8, "application/json")),
-                    ApiType.PUT => await client.PutAsync(requestDto.URL, new StringContent(JsonSerializer.Serialize(requestDto.Data), Encoding.UTF8, "application/json")),
-                    ApiType.DELETE => await client.DeleteAsync(requestDto.URL),
-                    _ => throw new InvalidOperationException("Unsupported API type")
-                };
+                    var contents = new MultipartFormDataContent();
+                    foreach (var prop in requestDto.Data.GetType().GetProperties())
+                    {
+                        var value = prop.GetValue(requestDto.Data);
+                        if (value is not null)
+                        {
+                            if (value is IFormFile file)
+                            {
+                                var fileContent = new StreamContent(file.OpenReadStream());
+                                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                                contents.Add(fileContent, prop.Name, file.FileName);
+
+                            }
+                            else
+                            {
+                                contents.Add(new StringContent(value.ToString() ?? string.Empty), prop.Name);
+                            }
+
+                        }
+                    }
+                    if (requestDto.APIType == ApiType.POST)
+                    {
+                        response = await client.PostAsync(requestDto.URL, contents);
+                    }
+                    else if (requestDto.APIType == ApiType.PUT)
+                    {
+                        response = await client.PutAsync(requestDto.URL, contents);
+                    }
+                }
+                else
+                {
+                    response = requestDto.APIType switch
+                    {
+                        ApiType.GET => await client.GetAsync(requestDto.URL),
+                        ApiType.POST => await client.PostAsync(requestDto.URL, new StringContent(JsonSerializer.Serialize(requestDto.Data), Encoding.UTF8, "application/json")),
+                        ApiType.PUT => await client.PutAsync(requestDto.URL, new StringContent(JsonSerializer.Serialize(requestDto.Data), Encoding.UTF8, "application/json")),
+                        ApiType.DELETE => await client.DeleteAsync(requestDto.URL),
+                        _ => throw new InvalidOperationException("Unsupported API type")
+                    };
+                }
+
 
                 var content = await response.Content.ReadAsStringAsync();
 
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                if (response.IsSuccessStatusCode)
                 {
                     try
                     {
@@ -50,6 +103,10 @@ namespace Microservice.Web.Services
 
                         return ResultDto<T>.SuccessResult(data, "Request succeeded but response could not be deserialized.");
                     }
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    return ResultDto<T>.FailureResult(content);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                 {

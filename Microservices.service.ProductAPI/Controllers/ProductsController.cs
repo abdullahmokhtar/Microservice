@@ -11,7 +11,7 @@ namespace Microservices.Services.ProductAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController(AppDbContext context, IMapper mapper) : ControllerBase
+public class ProductsController(AppDbContext context, IMapper mapper, IWebHostEnvironment environment) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
@@ -47,6 +47,27 @@ public class ProductsController(AppDbContext context, IMapper mapper) : Controll
 
         context.Products.Add(product);
         await context.SaveChangesAsync(cancellationToken);
+        if (productDto.Image is not null)
+        {
+            var fileName = $"{product.ProductId}{Path.GetExtension(productDto.Image.FileName)}";
+            var filePathDir = Path.Combine(environment.WebRootPath, "ProductImages");
+            var filePath = Path.Combine(filePathDir, fileName);
+            if (!Directory.Exists(filePathDir))
+            {
+                Directory.CreateDirectory(filePathDir);
+            }
+            using var stream = new FileStream(filePath, FileMode.Create);
+            productDto.Image.CopyTo(stream);
+            product.ImageLocalPath = filePath;
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            product.ImageUrl = $"{baseUrl}/ProductImages/{fileName}";
+        }
+        else
+        {
+            product.ImageUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/ProductImages/default.png";
+        }
+        await context.SaveChangesAsync(cancellationToken);
+
         ResultDto<ProductDto> ResultDto = ResultDto<ProductDto>.SuccessResult(mapper.Map<ProductDto>(product));
         return StatusCode((int)HttpStatusCode.Created, ResultDto);
     }
@@ -58,7 +79,34 @@ public class ProductsController(AppDbContext context, IMapper mapper) : Controll
         if (!ModelState.IsValid)
             return BadRequest(ResultDto<ProductDto>.FailureResult("Invalid Data"));
 
+        var productDB = await context.Products.AsNoTracking().Where(e => e.ProductId == productDto.ProductId).FirstOrDefaultAsync(cancellationToken);
+
         var product = mapper.Map<Product>(productDto);
+
+        if (productDto.Image is not null)
+        {
+            var fileName = $"{product.ProductId}{Path.GetExtension(productDto.Image.FileName)}";
+            var filePathDir = Path.Combine(environment.WebRootPath, "ProductImages");
+            var filePath = Path.Combine(filePathDir, fileName);
+            if (!Directory.Exists(filePathDir))
+            {
+                Directory.CreateDirectory(filePathDir);
+            }
+            using var stream = new FileStream(filePath, FileMode.Create);
+            productDto.Image.CopyTo(stream);
+
+            if (!string.IsNullOrWhiteSpace(productDB?.ImageLocalPath))
+            {
+                var file = new FileInfo(productDB.ImageLocalPath);
+                if (file.Exists)
+                {
+                    file.Delete();
+                }
+            }
+            product.ImageLocalPath = filePath;
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            product.ImageUrl = $"{baseUrl}/ProductImages/{fileName}";
+        }
 
         context.Products.Update(product);
         await context.SaveChangesAsync(cancellationToken);
@@ -77,6 +125,14 @@ public class ProductsController(AppDbContext context, IMapper mapper) : Controll
         var rowsaffcted = await context.SaveChangesAsync(cancellationToken);
         if (rowsaffcted == 0)
             return StatusCode((int)HttpStatusCode.InternalServerError, ResultDto<ProductDto>.FailureResult($"Could not delete product with id {id}"));
+        if (!string.IsNullOrWhiteSpace(product.ImageLocalPath))
+        {
+            var file = new FileInfo(product.ImageLocalPath);
+            if (file.Exists)
+            {
+                file.Delete();
+            }
+        }
         return Ok(ResultDto<bool>.SuccessResult(true, $"Product with id {id} deleted successfully"));
     }
 }

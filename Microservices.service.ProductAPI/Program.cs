@@ -33,6 +33,8 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseStaticFiles();
+
 app.MapControllers();
 
 ApplyMigrations(app);
