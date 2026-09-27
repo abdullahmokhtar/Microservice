@@ -2,7 +2,9 @@
   <Folder Name="/FrontEnd/">
     <Project Path="Microservice.Web/Microservice.Web.csproj" Id="4d4f8c37-bd76-4e19-9a63-a82dc6cde29f" />
   </Folder>
-  <Folder Name="/Gateway/" />
+  <Folder Name="/Gateway/">
+    <Project Path="Microservice.GatewaySolution/Microservice.GatewaySolution.csproj" Id="a7f3921b-1fb0-4e18-9e7a-ee23d662b6c4" />
+  </Folder>
   <Folder Name="/Integration/">
     <Project Path="Microservice.MessageBus/Microservice.MessageBus.csproj" Id="c85a3eb3-2726-4a2d-8cd3-deabe1e4151e" />
   </Folder>
